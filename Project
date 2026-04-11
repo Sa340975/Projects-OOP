@@ -1,0 +1,120 @@
+import java.util.Scanner;
+
+public class Project1 {
+
+    static String name = "";
+    static String id = "";
+    static int courses = 0;
+    static int[] marks = new int[5];
+
+    public static void main(String[] args) {
+
+        Scanner input = new Scanner(System.in);
+        int choice;
+
+        do {
+            System.out.println("\nMenu:");
+            System.out.println("1. Enter Student Details");
+            System.out.println("2. Enter Marks");
+            System.out.println("3. Display Marks Info.");
+            System.out.println("4. Display Student Details");
+            System.out.println("5. Exit");
+            System.out.print("Enter your choice: ");
+
+            choice = input.nextInt();
+
+            switch (choice) {
+
+                case 1:
+                    input.nextLine(); // clear buffer
+
+                    System.out.print("Enter Student Name: ");
+                    name = input.nextLine().trim();
+                    name = toTitleCase(name);
+
+                    do {
+                        System.out.print("Enter ID Number: ");
+                        id = input.next();
+                    } while (!id.matches("4\\d{8}"));
+
+                    do {
+                        System.out.print("How many courses last semester? ");
+                        courses = input.nextInt();
+                    } while (courses < 1 || courses > 5);
+
+                    break;
+
+                case 2:
+                    System.out.println("Enter Marks for " + courses + " subjects:");
+                    for (int i = 0; i < courses; i++) {
+                        do {
+                            marks[i] = input.nextInt();
+                        } while (marks[i] < 0 || marks[i] > 100);
+                    }
+                    displayMarks();
+                    break;
+
+                case 3:
+                    displayMarks();
+                    break;
+
+                case 4:
+                    displayStudent();
+                    break;
+
+                case 5:
+                    System.out.println("Goodbye!");
+                    break;
+
+                default:
+                    System.out.println("Invalid choice!");
+            }
+
+        } while (choice != 5);
+    }
+
+    public static void displayMarks() {
+        int sum = 0, max = marks[0], min = marks[0];
+
+        for (int i = 0; i < courses; i++) {
+            sum += marks[i];
+            if (marks[i] > max) max = marks[i];
+            if (marks[i] < min) min = marks[i];
+        }
+
+        double avg = (double) sum / courses;
+
+        System.out.println("\nCourse   Mark   P/F");
+        System.out.println("======================");
+
+        for (int i = 0; i < courses; i++) {
+            String status = (marks[i] >= 60) ? "Pass" : "Fail";
+            String note = "";
+
+            if (marks[i] == max) note = "Max";
+            if (marks[i] == min) note = "Min";
+
+            System.out.println((i + 1) + "        " + marks[i] + "     " + status + "   " + note);
+        }
+
+        System.out.println("Average: " + avg);
+    }
+
+    public static void displayStudent() {
+        System.out.println("\nName: " + name);
+        System.out.println("KKU ID: " + id);
+        displayMarks();
+    }
+
+    public static String toTitleCase(String str) {
+        String[] words = str.toLowerCase().split(" ");
+        String result = "";
+
+        for (String word : words) {
+            if (!word.isEmpty()) {
+                result += Character.toUpperCase(word.charAt(0)) + word.substring(1) + " ";
+            }
+        }
+        return result.trim();
+    }
+}
