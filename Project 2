@@ -1,0 +1,224 @@
+import java.util.*;
+
+// ================= Interface =================
+interface MarkOperations {
+    void enterMarks();
+    void modifyMark(int index, double newMark);
+    void displayMarksInfo();
+}
+
+// ================= Abstract Class =================
+abstract class Student implements MarkOperations {
+
+    protected String name;
+    protected String id;
+    protected int courseCount;
+    protected ArrayList<Double> marks = new ArrayList<>();
+
+    public Student(String name, String id, int courseCount) {
+        this.name = name;
+        this.id = id;
+        this.courseCount = courseCount;
+    }
+
+    public abstract boolean isPassed(double mark);
+
+    @Override
+    public void enterMarks() {
+        Scanner sc = new Scanner(System.in);
+        marks.clear();
+
+        for (int i = 0; i < courseCount; i++) {
+            try {
+                System.out.print("Enter mark for course " + (i + 1) + ": ");
+                double mark = sc.nextDouble();
+                if (mark < 0 || mark > 100)
+                    throw new IllegalArgumentException("Mark must be between 0 and 100");
+                marks.add(mark);
+            } catch (Exception e) {
+                System.out.println("Invalid mark, try again.");
+                i--;
+                sc.nextLine();
+            }
+        }
+    }
+
+    @Override
+    public void modifyMark(int index, double newMark) {
+        if (index >= 0 && index < marks.size() && newMark >= 0 && newMark <= 100) {
+            marks.set(index, newMark);
+        } else {
+            System.out.println("Invalid index or mark.");
+        }
+    }
+
+    @Override
+    public void displayMarksInfo() {
+        if (marks.isEmpty()) {
+            System.out.println("No marks entered.");
+            return;
+        }
+
+        double sum = 0;
+        double max = marks.get(0);
+        double min = marks.get(0);
+
+        for (double m : marks) {
+            sum += m;
+            if (m > max) max = m;
+            if (m < min) min = m;
+        }
+
+        double avg = sum / marks.size();
+        System.out.println("Average = " + avg);
+
+        for (int i = 0; i < marks.size(); i++) {
+            double m = marks.get(i);
+            System.out.println(
+                "Course " + (i + 1) + ": " + m + " " +
+                (isPassed(m) ? "Pass" : "Fail") +
+                (m == max ? " (Highest)" : "") +
+                (m == min ? " (Lowest)" : "")
+            );
+        }
+    }
+
+    public void displayStudentDetails() {
+        System.out.println("Name: " + name);
+        System.out.println("KKU ID: " + id);
+        System.out.println("Courses: " + courseCount);
+    }
+}
+
+// ================= Subclass =================
+class UndergraduateStudent extends Student {
+    public UndergraduateStudent(String name, String id, int courseCount) {
+        super(name, id, courseCount);
+    }
+
+    @Override
+    public boolean isPassed(double mark) {
+        return mark >= 60;
+    }
+}
+
+// ================= Subclass =================
+class GraduateStudent extends Student {
+    public GraduateStudent(String name, String id, int courseCount) {
+        super(name, id, courseCount);
+    }
+
+    @Override
+    public boolean isPassed(double mark) {
+        return mark >= 80;
+    }
+}
+
+// ================= Manager =================
+class StudentManager {
+    private ArrayList<Student> students = new ArrayList<>();
+
+    public void addStudent(Student s) {
+        students.add(s);
+    }
+
+    public Student getStudent(int index) {
+        return students.get(index);
+    }
+
+    public void listStudents() {
+        for (int i = 0; i < students.size(); i++) {
+            System.out.println(i + " - " + students.get(i).name);
+        }
+    }
+
+    public boolean isEmpty() {
+        return students.isEmpty();
+    }
+}
+
+// ================= Main Class =================
+public class MainApp {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        StudentManager manager = new StudentManager();
+
+        while (true) {
+            System.out.println("""
+            ===== MENU =====
+            1. Add Student
+            2. Enter Marks
+            3. Modify Marks
+            4. Display Marks Info
+            5. Display Student Details
+            6. Exit
+            """);
+
+            try {
+                int choice = sc.nextInt();
+
+                switch (choice) {
+                    case 1 -> {
+                        sc.nextLine();
+                        System.out.print("Student Name: ");
+                        String name = sc.nextLine();
+
+                        System.out.print("KKU ID: ");
+                        String id = sc.nextLine();
+                        if (!id.matches("4\\d{8}"))
+                            throw new Exception("Invalid KKU ID");
+
+                        System.out.print("Number of courses (max 5): ");
+                        int courses = sc.nextInt();
+                        if (courses > 5)
+                            throw new Exception("Maximum 5 courses only");
+
+                        System.out.print("1- Undergraduate  2- Graduate: ");
+                        int type = sc.nextInt();
+
+                        Student s = (type == 1)
+                                ? new UndergraduateStudent(name, id, courses)
+                                : new GraduateStudent(name, id, courses);
+
+                        manager.addStudent(s);
+                    }
+
+                    case 2 -> {
+                        if (manager.isEmpty()) break;
+                        manager.listStudents();
+                        manager.getStudent(sc.nextInt()).enterMarks();
+                    }
+
+                    case 3 -> {
+                        if (manager.isEmpty()) break;
+                        manager.listStudents();
+                        Student s = manager.getStudent(sc.nextInt());
+                        System.out.print("Course number: ");
+                        int idx = sc.nextInt() - 1;
+                        System.out.print("New mark: ");
+                        s.modifyMark(idx, sc.nextDouble());
+                    }
+
+                    case 4 -> {
+                        if (manager.isEmpty()) break;
+                        manager.listStudents();
+                        manager.getStudent(sc.nextInt()).displayMarksInfo();
+                    }
+
+                    case 5 -> {
+                        if (manager.isEmpty()) break;
+                        manager.listStudents();
+                        manager.getStudent(sc.nextInt()).displayStudentDetails();
+                    }
+
+                    case 6 -> System.exit(0);
+                }
+
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+                sc.nextLine();
+            }
+        }
+    }
+}
